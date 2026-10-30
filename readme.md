@@ -136,6 +136,8 @@ Integração bancária, Open Finance, corretoras, recomendações de investiment
 - `TESTES_V1_BETA.md` — ambiente, comandos, resultados e evidências dos testes.
 - `CHANGELOG.md` — histórico de mudanças da versão beta.
 - `PENDENCIAS_V2.md` — melhorias futuras, fora de escopo, riscos aceitos e itens adiados.
+- `SECURITY.md` — medidas de segurança implementadas, limites e riscos conhecidos.
+- `PRIVACY.md` — tratamento de dados, privacidade e limites da LGPD.
 - Três relatórios oficiais do projeto (Produto, Desenvolvimento, Design e UX) são a base dos requisitos implementados.
 
 ---
