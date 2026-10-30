@@ -61,9 +61,15 @@ abstract class FinanceStore {
 
   // ----------------------------------------------------------------- lançamentos
 
-  Future<void> addExpense(int cents, String date, int categoryId, String boxId,
-      String payment, String note,
-      {int? recorrenciaId});
+  Future<void> addExpense(
+    int cents,
+    String date,
+    int categoryId,
+    String boxId,
+    String payment,
+    String note, {
+    int? recorrenciaId,
+  });
 
   /// Estorna um lançamento devolvendo seu valor à caixinha de origem,
   /// vinculado ao lançamento original (R1 §8.9).
@@ -148,7 +154,8 @@ class SqfliteFinanceStore extends FinanceStore {
   }
 
   @override
-  Future<void> setInitialized() async => await setSetting('onboarding_done', '1');
+  Future<void> setInitialized() async =>
+      await setSetting('onboarding_done', '1');
 
   @override
   Future<void> open() async {
@@ -162,39 +169,65 @@ class SqfliteFinanceStore extends FinanceStore {
   }
 
   Future<void> _onCreate(Database d, int _) async {
-    await d.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
     await d.execute(
-        'CREATE TABLE rules (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, rates TEXT NOT NULL)');
+      'CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
+    );
     await d.execute(
-        'CREATE TABLE incomes (id INTEGER PRIMARY KEY AUTOINCREMENT, amount INTEGER NOT NULL CHECK(amount > 0), date TEXT NOT NULL, source TEXT, rule_id INTEGER NOT NULL, unallocated INTEGER NOT NULL, created_at TEXT NOT NULL)');
+      'CREATE TABLE rules (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, rates TEXT NOT NULL)',
+    );
     await d.execute(
-        'CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, essential INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1)');
+      'CREATE TABLE incomes (id INTEGER PRIMARY KEY AUTOINCREMENT, amount INTEGER NOT NULL CHECK(amount > 0), date TEXT NOT NULL, source TEXT, rule_id INTEGER NOT NULL, unallocated INTEGER NOT NULL, created_at TEXT NOT NULL)',
+    );
     await d.execute(
-        'CREATE TABLE movements (id INTEGER PRIMARY KEY AUTOINCREMENT, box_id TEXT NOT NULL, amount INTEGER NOT NULL, type TEXT NOT NULL, date TEXT NOT NULL, category_id INTEGER, payment TEXT, note TEXT, income_id INTEGER, recorrencia_id INTEGER, source_movement_id INTEGER, pair_key TEXT, created_at TEXT NOT NULL)');
+      'CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, essential INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1)',
+    );
     await d.execute(
-        "CREATE TABLE recorrencias (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, valor INTEGER NOT NULL CHECK(valor > 0), periodicidade TEXT NOT NULL CHECK(periodicidade IN ('mensal','anual')), proxima_data TEXT NOT NULL, box_id TEXT NOT NULL, category_id INTEGER, pausada INTEGER NOT NULL DEFAULT 0, data_inicio TEXT, data_fim TEXT, criada_em TEXT NOT NULL)");
+      'CREATE TABLE movements (id INTEGER PRIMARY KEY AUTOINCREMENT, box_id TEXT NOT NULL, amount INTEGER NOT NULL, type TEXT NOT NULL, date TEXT NOT NULL, category_id INTEGER, payment TEXT, note TEXT, income_id INTEGER, recorrencia_id INTEGER, source_movement_id INTEGER, pair_key TEXT, created_at TEXT NOT NULL)',
+    );
+    await d.execute(
+      "CREATE TABLE recorrencias (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, valor INTEGER NOT NULL CHECK(valor > 0), periodicidade TEXT NOT NULL CHECK(periodicidade IN ('mensal','anual')), proxima_data TEXT NOT NULL, box_id TEXT NOT NULL, category_id INTEGER, pausada INTEGER NOT NULL DEFAULT 0, data_inicio TEXT, data_fim TEXT, criada_em TEXT NOT NULL)",
+    );
     await d.execute('CREATE INDEX idx_movements_date ON movements(date)');
     await d.execute('CREATE INDEX idx_movements_box ON movements(box_id)');
-    await d.execute('CREATE INDEX idx_movements_source ON movements(source_movement_id)');
-    await d.execute('CREATE INDEX idx_recorrencias_proxima ON recorrencias(proxima_data)');
+    await d.execute(
+      'CREATE INDEX idx_movements_source ON movements(source_movement_id)',
+    );
+    await d.execute(
+      'CREATE INDEX idx_recorrencias_proxima ON recorrencias(proxima_data)',
+    );
     await _seedCategories(d);
     await d.insert('rules', {
       'created_at': DateTime.now().toIso8601String(),
       'rates': jsonEncode(defaultRates),
     });
-    await d.insert('settings', {'key': 'schema_version', 'value': schemaVersion.toString()});
+    await d.insert('settings', {
+      'key': 'schema_version',
+      'value': schemaVersion.toString(),
+    });
   }
 
   Future<void> _onUpgrade(Database d, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await d.execute('ALTER TABLE movements ADD COLUMN recorrencia_id INTEGER');
-      await d.execute('ALTER TABLE movements ADD COLUMN source_movement_id INTEGER');
       await d.execute(
-          "CREATE TABLE IF NOT EXISTS recorrencias (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, valor INTEGER NOT NULL CHECK(valor > 0), periodicidade TEXT NOT NULL CHECK(periodicidade IN ('mensal','anual')), proxima_data TEXT NOT NULL, box_id TEXT NOT NULL, category_id INTEGER, pausada INTEGER NOT NULL DEFAULT 0, data_inicio TEXT, data_fim TEXT, criada_em TEXT NOT NULL)");
-      await d.execute('CREATE INDEX IF NOT EXISTS idx_movements_source ON movements(source_movement_id)');
-      await d.execute('CREATE INDEX IF NOT EXISTS idx_recorrencias_proxima ON recorrencias(proxima_data)');
+        'ALTER TABLE movements ADD COLUMN recorrencia_id INTEGER',
+      );
+      await d.execute(
+        'ALTER TABLE movements ADD COLUMN source_movement_id INTEGER',
+      );
+      await d.execute(
+        "CREATE TABLE IF NOT EXISTS recorrencias (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, valor INTEGER NOT NULL CHECK(valor > 0), periodicidade TEXT NOT NULL CHECK(periodicidade IN ('mensal','anual')), proxima_data TEXT NOT NULL, box_id TEXT NOT NULL, category_id INTEGER, pausada INTEGER NOT NULL DEFAULT 0, data_inicio TEXT, data_fim TEXT, criada_em TEXT NOT NULL)",
+      );
+      await d.execute(
+        'CREATE INDEX IF NOT EXISTS idx_movements_source ON movements(source_movement_id)',
+      );
+      await d.execute(
+        'CREATE INDEX IF NOT EXISTS idx_recorrencias_proxima ON recorrencias(proxima_data)',
+      );
       await _seedCategoriesIfMissing(d);
-      await d.insert('settings', {'key': 'schema_version', 'value': newVersion.toString()});
+      await d.insert('settings', {
+        'key': 'schema_version',
+        'value': newVersion.toString(),
+      });
     }
   }
 
@@ -214,7 +247,7 @@ class SqfliteFinanceStore extends FinanceStore {
       ['Lazer', 0],
       ['Delivery', 0],
       ['Compras', 0],
-      ['Assinaturas', 0]
+      ['Assinaturas', 0],
     ]) {
       await d.insert('categories', {'name': c[0], 'essential': c[1]});
     }
@@ -234,9 +267,11 @@ class SqfliteFinanceStore extends FinanceStore {
   }
 
   @override
-  Future<void> setSetting(String key, String value) async =>
-      db.insert('settings', {'key': key, 'value': value},
-          conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> setSetting(String key, String value) async => db.insert(
+    'settings',
+    {'key': key, 'value': value},
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 
   @override
   Future<int> mesFinanceiroInicio() async {
@@ -283,8 +318,10 @@ class SqfliteFinanceStore extends FinanceStore {
     await setSetting('pin_tentativas', atual.toString());
     if (atual % 5 == 0) {
       final minutos = 1 << (atual ~/ 5 - 1);
-      await setSetting('pin_bloqueado_ate',
-          DateTime.now().add(Duration(minutes: minutos)).toIso8601String());
+      await setSetting(
+        'pin_bloqueado_ate',
+        DateTime.now().add(Duration(minutes: minutos)).toIso8601String(),
+      );
     }
   }
 
@@ -303,7 +340,10 @@ class SqfliteFinanceStore extends FinanceStore {
 
   String _randomSalt(int bytes) {
     final r = Random.secure();
-    return List.generate(bytes, (_) => r.nextInt(256)).map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    return List.generate(
+      bytes,
+      (_) => r.nextInt(256),
+    ).map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 
   static bool _constEq(String a, String b) {
@@ -320,12 +360,16 @@ class SqfliteFinanceStore extends FinanceStore {
   @override
   Future<List<int>> rates() async {
     final rows = await db.query('rules', orderBy: 'id DESC', limit: 1);
-    return rows.isEmpty ? List.of(defaultRates) : (jsonDecode(rows.first['rates'] as String) as List).cast<int>();
+    return rows.isEmpty
+        ? List.of(defaultRates)
+        : (jsonDecode(rows.first['rates'] as String) as List).cast<int>();
   }
 
   @override
   Future<void> saveRates(List<int> rates) async {
-    if (rates.length != 5 || rates.any((n) => n < 0 || n > 10000) || rates.reduce((a, b) => a + b) > 10000) {
+    if (rates.length != 5 ||
+        rates.any((n) => n < 0 || n > 10000) ||
+        rates.reduce((a, b) => a + b) > 10000) {
       throw ArgumentError('Percentuais inválidos');
     }
     await db.insert('rules', {'created_at': now, 'rates': jsonEncode(rates)});
@@ -343,9 +387,11 @@ class SqfliteFinanceStore extends FinanceStore {
   Future<void> addIncome(int cents, String date, String source) async {
     if (cents <= 0) throw ArgumentError('A renda precisa ser positiva.');
     final ruleRows = await db.query('rules', orderBy: 'id DESC', limit: 1);
-    if (ruleRows.isEmpty) throw StateError('Nenhuma regra de distribuição cadastrada.');
+    if (ruleRows.isEmpty)
+      throw StateError('Nenhuma regra de distribuição cadastrada.');
     final ruleId = ruleRows.first['id'] as int;
-    final currentRates = (jsonDecode(ruleRows.first['rates'] as String) as List).cast<int>();
+    final currentRates = (jsonDecode(ruleRows.first['rates'] as String) as List)
+        .cast<int>();
     final a = distribute(cents, currentRates);
     await db.transaction((txn) async {
       final incomeId = await txn.insert('incomes', {
@@ -374,9 +420,17 @@ class SqfliteFinanceStore extends FinanceStore {
   // ----------------------------------------------------------------- lançamentos
 
   @override
-  Future<void> addExpense(int cents, String date, int categoryId, String boxId, String payment, String note,
-      {int? recorrenciaId}) async {
-    if (cents <= 0 || !boxIds.contains(boxId)) throw ArgumentError('Gasto inválido');
+  Future<void> addExpense(
+    int cents,
+    String date,
+    int categoryId,
+    String boxId,
+    String payment,
+    String note, {
+    int? recorrenciaId,
+  }) async {
+    if (cents <= 0 || !boxIds.contains(boxId))
+      throw ArgumentError('Gasto inválido');
     await db.insert('movements', {
       'box_id': boxId,
       'amount': -cents,
@@ -392,12 +446,17 @@ class SqfliteFinanceStore extends FinanceStore {
 
   @override
   Future<void> estornar(int movementId, String note) async {
-    final original = await db.query('movements', where: 'id = ?', whereArgs: [movementId]);
+    final original = await db.query(
+      'movements',
+      where: 'id = ?',
+      whereArgs: [movementId],
+    );
     if (original.isEmpty) throw StateError('Lançamento não encontrado.');
     final o = original.first;
     final box = o['box_id'] as String;
     final cents = -(o['amount'] as int);
-    if (cents <= 0) throw StateError('Não há valor a estornar neste lançamento.');
+    if (cents <= 0)
+      throw StateError('Não há valor a estornar neste lançamento.');
     await db.transaction((txn) async {
       await txn.insert('movements', {
         'box_id': box,
@@ -415,7 +474,10 @@ class SqfliteFinanceStore extends FinanceStore {
 
   @override
   Future<void> transfer(int cents, String from, String to, String note) async {
-    if (cents <= 0 || from == to || !boxIds.contains(from) || !boxIds.contains(to)) {
+    if (cents <= 0 ||
+        from == to ||
+        !boxIds.contains(from) ||
+        !boxIds.contains(to)) {
       throw ArgumentError('Transferência inválida');
     }
     final pair = '$now-$from-$to';
@@ -457,7 +519,8 @@ class SqfliteFinanceStore extends FinanceStore {
   }
 
   @override
-  Future<Map<String, int>> getBalances() async => balances(await db.query('movements'));
+  Future<Map<String, int>> getBalances() async =>
+      balances(await db.query('movements'));
 
   @override
   Future<List<Map<String, Object?>>> movements({
@@ -491,8 +554,9 @@ class SqfliteFinanceStore extends FinanceStore {
     }
     final where = clauses.isEmpty ? '' : "WHERE ${clauses.join(' AND ')}";
     return db.rawQuery(
-        'SELECT m.*, c.name AS category_name FROM movements m LEFT JOIN categories c ON c.id = m.category_id $where ORDER BY m.date DESC, m.id DESC',
-        args);
+      'SELECT m.*, c.name AS category_name FROM movements m LEFT JOIN categories c ON c.id = m.category_id $where ORDER BY m.date DESC, m.id DESC',
+      args,
+    );
   }
 
   @override
@@ -506,7 +570,10 @@ class SqfliteFinanceStore extends FinanceStore {
   @override
   Future<void> addCategory(String name, bool essential) async {
     if (name.trim().isEmpty) throw ArgumentError('Nome obrigatório');
-    await db.insert('categories', {'name': name.trim(), 'essential': essential ? 1 : 0});
+    await db.insert('categories', {
+      'name': name.trim(),
+      'essential': essential ? 1 : 0,
+    });
   }
 
   @override
@@ -523,10 +590,12 @@ class SqfliteFinanceStore extends FinanceStore {
       clauses.add('pausada = ?');
       args.add(pausada ? 1 : 0);
     }
-    return db.query('recorrencias',
-        where: clauses.isEmpty ? null : clauses.join(' AND '),
-        whereArgs: args.isEmpty ? null : args,
-        orderBy: 'proxima_data ASC, descricao ASC');
+    return db.query(
+      'recorrencias',
+      where: clauses.isEmpty ? null : clauses.join(' AND '),
+      whereArgs: args.isEmpty ? null : args,
+      orderBy: 'proxima_data ASC, descricao ASC',
+    );
   }
 
   @override
@@ -544,7 +613,8 @@ class SqfliteFinanceStore extends FinanceStore {
   }) async {
     if (descricao.trim().isEmpty) throw ArgumentError('Descrição obrigatória');
     if (valorCents <= 0) throw ArgumentError('Valor inválido');
-    if (!['mensal', 'anual'].contains(periodicidade)) throw ArgumentError('Periodicidade inválida');
+    if (!['mensal', 'anual'].contains(periodicidade))
+      throw ArgumentError('Periodicidade inválida');
     if (!boxIds.contains(boxId)) throw ArgumentError('Caixinha inválida');
     final row = {
       'descricao': descricao.trim(),
@@ -566,20 +636,26 @@ class SqfliteFinanceStore extends FinanceStore {
   }
 
   @override
-  Future<void> setRecorrenciaPausada(int id, bool pausada) =>
-      db.update('recorrencias', {'pausada': pausada ? 1 : 0}, where: 'id = ?', whereArgs: [id]);
+  Future<void> setRecorrenciaPausada(int id, bool pausada) => db.update(
+    'recorrencias',
+    {'pausada': pausada ? 1 : 0},
+    where: 'id = ?',
+    whereArgs: [id],
+  );
 
   @override
-  Future<void> deleteRecorrencia(int id) => db.delete('recorrencias', where: 'id = ?', whereArgs: [id]);
+  Future<void> deleteRecorrencia(int id) =>
+      db.delete('recorrencias', where: 'id = ?', whereArgs: [id]);
 
   @override
   Future<List<int>> gerarOcorrenciasVencidas({String? hoje}) async {
     final ref = hoje ?? today;
     final rows = await db.query(
-        'recorrencias',
-        where: 'pausada = 0 AND (data_fim IS NULL OR data_fim >= ?) AND proxima_data <= ?',
-        whereArgs: [ref, ref],
-        orderBy: 'proxima_data ASC');
+      'recorrencias',
+      where: 'pausada = 0 AND (data_fim IS NULL OR data_fim >= ?) AND proxima_data <= ?',
+      whereArgs: [ref, ref],
+      orderBy: 'proxima_data ASC',
+    );
     final created = <int>[];
     for (final r in rows) {
       final id = r['id'] as int;
@@ -600,7 +676,12 @@ class SqfliteFinanceStore extends FinanceStore {
         while (prox.compareTo(ref) <= 0) {
           prox = _addMes(prox, passo);
         }
-        await txn.update('recorrencias', {'proxima_data': prox}, where: 'id = ?', whereArgs: [id]);
+        await txn.update(
+          'recorrencias',
+          {'proxima_data': prox},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
       });
     }
     return created;
@@ -624,12 +705,15 @@ class SqfliteFinanceStore extends FinanceStore {
   }
 
   @override
-  Future<Map<String, double>> equivalenciaMensalRecorrencias({String? ate}) async {
+  Future<Map<String, double>> equivalenciaMensalRecorrencias({
+    String? ate,
+  }) async {
     final ref = ate ?? today;
     final rows = await db.query(
-        'recorrencias',
-        where: 'pausada = 0 AND (data_inicio IS NULL OR data_inicio <= ?) AND (data_fim IS NULL OR data_fim >= ?)',
-        whereArgs: [ref, ref]);
+      'recorrencias',
+      where: 'pausada = 0 AND (data_inicio IS NULL OR data_inicio <= ?) AND (data_fim IS NULL OR data_fim >= ?)',
+      whereArgs: [ref, ref],
+    );
     final totais = <String, double>{};
     for (final r in rows) {
       final box = r['box_id'] as String;
@@ -645,20 +729,24 @@ class SqfliteFinanceStore extends FinanceStore {
   @override
   Future<Map<String, Object?>> resumoPeriodo(String de, String ate) async {
     final recebido = await db.rawQuery(
-        'SELECT COALESCE(SUM(amount),0) AS total FROM incomes WHERE date >= ? AND date <= ?', [de, ate]);
+      'SELECT COALESCE(SUM(amount),0) AS total FROM incomes WHERE date >= ? AND date <= ?',
+      [de, ate],
+    );
     final totalReceitas = (recebido.first['total'] as int?) ?? 0;
 
     final gastos = await db.rawQuery(
-        'SELECT COALESCE(SUM(-amount),0) AS total FROM movements WHERE type = ? AND date >= ? AND date <= ?',
-        ['gasto', de, ate]);
+      'SELECT COALESCE(SUM(-amount),0) AS total FROM movements WHERE type = ? AND date >= ? AND date <= ?',
+      ['gasto', de, ate],
+    );
     final totalGastos = (gastos.first['total'] as int?) ?? 0;
 
     final porCategoria = await db.rawQuery(
-        '''SELECT c.name AS categoria, c.essential AS essencial, COALESCE(SUM(-m.amount),0) AS total
+      '''SELECT c.name AS categoria, c.essential AS essencial, COALESCE(SUM(-m.amount),0) AS total
            FROM movements m JOIN categories c ON c.id = m.category_id
            WHERE m.type = ? AND m.date >= ? AND m.date <= ?
            GROUP BY c.id ORDER BY total DESC''',
-        ['gasto', de, ate]);
+      ['gasto', de, ate],
+    );
 
     final essenciais = <String, int>{};
     final naoEssenciais = <String, int>{};
@@ -679,8 +767,16 @@ class SqfliteFinanceStore extends FinanceStore {
   }
 
   @override
-  Future<List<Map<String, Object?>>> saldoEvolucao(String de, String ate) async {
-    final all = await db.query('movements', where: 'date <= ?', whereArgs: [ate], orderBy: 'date ASC, id ASC');
+  Future<List<Map<String, Object?>>> saldoEvolucao(
+    String de,
+    String ate,
+  ) async {
+    final all = await db.query(
+      'movements',
+      where: 'date <= ?',
+      whereArgs: [ate],
+      orderBy: 'date ASC, id ASC',
+    );
     final boxes = List.of(boxIds);
     var running = {for (final b in boxes) b: 0};
     for (final m in all) {
@@ -699,7 +795,11 @@ class SqfliteFinanceStore extends FinanceStore {
       final mes = '${cursor.year}-${cursor.month.toString().padLeft(2, '0')}';
       preenchido[mes] = {'mes': mes, 'saldoTotal': saldoAnterior};
       final dias = DateTime(cursor.year, cursor.month + 1, 0).day;
-      cursor = DateTime(cursor.year, cursor.month, dias).add(const Duration(days: 1));
+      cursor = DateTime(
+        cursor.year,
+        cursor.month,
+        dias,
+      ).add(const Duration(days: 1));
     }
 
     for (final m in all) {
@@ -708,7 +808,10 @@ class SqfliteFinanceStore extends FinanceStore {
       running = Map.from(running)
         ..update(m['box_id'] as String, (v) => v + (m['amount'] as int));
       final mes = date.substring(0, 7);
-      preenchido[mes] = {'mes': mes, 'saldoTotal': running.values.fold<int>(0, (a, b) => a + b)};
+      preenchido[mes] = {
+        'mes': mes,
+        'saldoTotal': running.values.fold<int>(0, (a, b) => a + b),
+      };
     }
 
     return preenchido.values.toList()
@@ -719,13 +822,16 @@ class SqfliteFinanceStore extends FinanceStore {
   Future<String> exportarCsvLancamentos({String? de, String? ate}) async {
     final rows = await movements(de: de, ate: ate);
     final buffer = StringBuffer();
-    buffer.writeln('Data,Tipo,Caixinha,Categoria,Valor (R\$),Forma de pagamento,Observação');
+    buffer.writeln(
+      'Data,Tipo,Caixinha,Categoria,Valor (R\$),Forma de pagamento,Observação',
+    );
     var total = 0;
     for (final m in rows) {
       final cents = m['amount'] as int;
       total += cents;
       buffer.writeln(
-          '${m['date']},${m['type']},${_boxNome(m['box_id'] as String)},${_csvField(m['category_name'] as String?)},${money(cents)},${_csvField(m['payment'] as String?)},${_csvField(m['note'] as String?)}');
+        '${m['date']},${m['type']},${_boxNome(m['box_id'] as String)},${_csvField(m['category_name'] as String?)},${money(cents)},${_csvField(m['payment'] as String?)},${_csvField(m['note'] as String?)}',
+      );
     }
     buffer.writeln();
     buffer.writeln('Total,,,,${money(total)},,');
@@ -764,16 +870,39 @@ class SqfliteFinanceStore extends FinanceStore {
     }
     final v = int.parse(version.toString());
     if (v > schemaVersion) {
-      throw FormatException('Backup de versão futura ($v), não suportado por esta versão ($schemaVersion).');
+      throw FormatException(
+        'Backup de versão futura ($v), não suportado por esta versão ($schemaVersion).',
+      );
     }
-    for (final table in ['settings', 'rules', 'incomes', 'categories', 'movements']) {
-      if (data[table] is! List) throw const FormatException('Backup incompleto');
+    for (final table in [
+      'settings',
+      'rules',
+      'incomes',
+      'categories',
+      'movements',
+    ]) {
+      if (data[table] is! List)
+        throw const FormatException('Backup incompleto');
     }
     await db.transaction((txn) async {
-      for (final table in ['movements', 'incomes', 'recorrencias', 'rules', 'categories', 'settings']) {
+      for (final table in [
+        'movements',
+        'incomes',
+        'recorrencias',
+        'rules',
+        'categories',
+        'settings',
+      ]) {
         await txn.delete(table);
       }
-      const ordem = ['settings', 'rules', 'incomes', 'categories', 'recorrencias', 'movements'];
+      const ordem = [
+        'settings',
+        'rules',
+        'incomes',
+        'categories',
+        'recorrencias',
+        'movements',
+      ];
       for (final table in ordem) {
         final items = data[table];
         if (items is List) {
@@ -792,8 +921,12 @@ class SqfliteFinanceStore extends FinanceStore {
       final computed = balances(rows);
       final informados = (data['balances'] as Map?)?.cast<String, dynamic>();
       if (informados != null &&
-          boxIds.any((id) => (computed[id] ?? 0) != (informados[id] as num?)?.toInt())) {
-        throw const FormatException('Saldos do backup divergem dos lançamentos restaurados.');
+          boxIds.any(
+            (id) => (computed[id] ?? 0) != (informados[id] as num?)?.toInt(),
+          )) {
+        throw const FormatException(
+          'Saldos do backup divergem dos lançamentos restaurados.',
+        );
       }
     });
     await _ensureDefaults();

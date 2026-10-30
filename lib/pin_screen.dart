@@ -43,8 +43,12 @@ class _PinScreenState extends State<PinScreen> {
     } else if (widget.biometriaDisponivel) {
       try {
         final ok = await _auth.authenticate(
-            localizedReason: 'Desbloqueie o Metric para acessar suas caixinhas',
-            options: const AuthenticationOptions(biometricOnly: false, stickyAuth: false));
+          localizedReason: 'Desbloqueie o Metric para acessar suas caixinhas',
+          options: const AuthenticationOptions(
+            biometricOnly: false,
+            stickyAuth: false,
+          ),
+        );
         if (ok && mounted) Navigator.pop(context, true);
       } catch (_) {}
     }
@@ -76,7 +80,8 @@ class _PinScreenState extends State<PinScreen> {
   void _apagar() {
     setState(() {
       _erro = null;
-      if (_digitado.isNotEmpty) _digitado = _digitado.substring(0, _digitado.length - 1);
+      if (_digitado.isNotEmpty)
+        _digitado = _digitado.substring(0, _digitado.length - 1);
     });
   }
 
@@ -87,13 +92,19 @@ class _PinScreenState extends State<PinScreen> {
     }
     if (widget.mode == 'criar') {
       if (!_confirmando) {
-        setState(() { _primeiro = _digitado; _digitado = ''; _confirmando = true; });
+        setState(() {
+          _primeiro = _digitado;
+          _digitado = '';
+          _confirmando = true;
+        });
         return;
       }
       if (_digitado != _primeiro) {
         setState(() {
           _erro = 'Os PINs não conferem. Tente novamente.';
-          _digitado = ''; _confirmando = false; _primeiro = null;
+          _digitado = '';
+          _confirmando = false;
+          _primeiro = null;
         });
         return;
       }
@@ -127,7 +138,8 @@ class _PinScreenState extends State<PinScreen> {
         final preenchido = i < _digitado.length;
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 6),
-          width: 44, height: 44,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: preenchido ? kDestaque : const Color(0xFFE5E7EB),
             borderRadius: BorderRadius.circular(12),
@@ -154,39 +166,64 @@ class _PinScreenState extends State<PinScreen> {
         child: Column(
           children: [
             const SizedBox(height: 24),
-            Text(_titulo, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: kTextoPrincipal)),
+            Text(
+              _titulo,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: kTextoPrincipal,
+              ),
+            ),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(_subtitulo, textAlign: TextAlign.center, style: const TextStyle(color: kTextoSecundario)),
+              child: Text(
+                _subtitulo,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: kTextoSecundario),
+              ),
             ),
             const SizedBox(height: 40),
             _campo(),
             if (_erro != null) ...[
               const SizedBox(height: 12),
-              Text(_erro!, style: const TextStyle(color: kNegativo, fontSize: 13)),
+              Text(
+                _erro!,
+                style: const TextStyle(color: kNegativo, fontSize: 13),
+              ),
             ],
             const Spacer(),
-            if (widget.mode == 'criar' && widget.biometriaDisponivel && !_confirmando)
+            if (widget.mode == 'criar' &&
+                widget.biometriaDisponivel &&
+                !_confirmando)
               TextButton.icon(
-                onPressed: _bloqueado ? null : () async {
-                  final ok = await _auth.authenticate(
-                      localizedReason: 'Use a biometria para criar o PIN do Metric',
-                      options: const AuthenticationOptions(biometricOnly: false));
-                  if (ok && mounted) {
-                    // biometria apenas isenta da digitação na tela do aparelho;
-                    // o PIN ainda precisa ser criado para funcionar como fallback.
-                    setState(() => _bloqueado = false);
-                  }
-                },
+                onPressed: _bloqueado
+                    ? null
+                    : () async {
+                        final ok = await _auth.authenticate(
+                          localizedReason:
+                              'Use a biometria para criar o PIN do Metric',
+                          options: const AuthenticationOptions(
+                            biometricOnly: false,
+                          ),
+                        );
+                        if (ok && mounted) {
+                          // biometria apenas isenta da digitação na tela do aparelho;
+                          // o PIN ainda precisa ser criado para funcionar como fallback.
+                          setState(() => _bloqueado = false);
+                        }
+                      },
                 icon: const Icon(Icons.fingerprint, size: 20),
                 label: const Text('Usar biometria também'),
               ),
             if (_bloqueado && widget.mode == 'desbloquear')
               const Padding(
                 padding: EdgeInsets.all(24),
-                child: Text('Muitas tentativas. Tente novamente mais tarde.',
-                    textAlign: TextAlign.center, style: TextStyle(color: kNegativo)),
+                child: Text(
+                  'Muitas tentativas. Tente novamente mais tarde.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: kNegativo),
+                ),
               ),
             const SizedBox(height: 30),
             GridView.builder(
@@ -194,14 +231,21 @@ class _PinScreenState extends State<PinScreen> {
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 32),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, childAspectRatio: 2, mainAxisSpacing: 12, crossAxisSpacing: 12,
+                crossAxisCount: 3,
+                childAspectRatio: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
               ),
               itemCount: 12,
               itemBuilder: (_, i) {
                 if (i == 9) return _tecla('<', onTap: _apagar);
                 if (i == 10) return _tecla('0', onTap: () => _digito('0'));
-                if (i == 11) return _tecla('OK', onTap: _enviar, estilo: kDestaque);
-                return _tecla(teclado[i ~/ 3][i % 3], onTap: () => _digito(teclado[i ~/ 3][i % 3]));
+                if (i == 11)
+                  return _tecla('OK', onTap: _enviar, estilo: kDestaque);
+                return _tecla(
+                  teclado[i ~/ 3][i % 3],
+                  onTap: () => _digito(teclado[i ~/ 3][i % 3]),
+                );
               },
             ),
             const SizedBox(height: 30),
@@ -219,7 +263,14 @@ class _PinScreenState extends State<PinScreen> {
         borderRadius: BorderRadius.circular(16),
         onTap: _bloqueado || onTap == null ? null : onTap,
         child: Center(
-          child: Text(texto, style: TextStyle(fontSize: 22, color: estilo ?? kTextoPrincipal, fontWeight: FontWeight.w600)),
+          child: Text(
+            texto,
+            style: TextStyle(
+              fontSize: 22,
+              color: estilo ?? kTextoPrincipal,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );

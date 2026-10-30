@@ -19,7 +19,10 @@ class GraficoLinha extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (valores.isEmpty) {
-      return SizedBox(height: altura, child: const Center(child: Text('Sem dados suficientes.')));
+      return SizedBox(
+        height: altura,
+        child: const Center(child: Text('Sem dados suficientes.')),
+      );
     }
     final min = valores.reduce((a, b) => a < b ? a : b);
     final max = valores.reduce((a, b) => a > b ? a : b);
@@ -30,24 +33,39 @@ class GraficoLinha extends StatelessWidget {
           height: altura - 24,
           child: CustomPaint(
             size: Size(double.infinity, altura - 24),
-            painter: _LinhaPainter(valores: valores, min: min, max: max, range: range),
+            painter: _LinhaPainter(
+              valores: valores,
+              min: min,
+              max: max,
+              range: range,
+            ),
           ),
         ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(rotulos.first, style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563))),
-            Text(rotulos.last, style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563))),
+            Text(
+              rotulos.first,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563)),
+            ),
+            Text(
+              rotulos.last,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563)),
+            ),
           ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('$rotuloValor ${min.toStringAsFixed(0)}',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563))),
-            Text('$rotuloValor ${max.toStringAsFixed(0)}',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563))),
+            Text(
+              '$rotuloValor ${min.toStringAsFixed(0)}',
+              style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563)),
+            ),
+            Text(
+              '$rotuloValor ${max.toStringAsFixed(0)}',
+              style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563)),
+            ),
           ],
         ),
       ],
@@ -60,8 +78,12 @@ class _LinhaPainter extends CustomPainter {
   final double min;
   final double max;
   final double range;
-  _LinhaPainter({required List<double> valores, required this.min, required this.max, required this.range})
-      : valores = List<double>.from(valores);
+  _LinhaPainter({
+    required List<double> valores,
+    required this.min,
+    required this.max,
+    required this.range,
+  }) : valores = List<double>.from(valores);
 
   @override
   void paint(Canvas canvas, Size size) {

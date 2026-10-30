@@ -2,9 +2,10 @@
 
 Organizador financeiro simples e preciso: divide cada renda em cinco caixinhas (Essenciais, Livre, Reserva de emergência, Investido, Metas) por percentuais definidos pelo usuário, registra gastos por categoria, distingue essencial de não essencial, e mostra quanto você realmente pode gastar — tudo no próprio aparelho, sem internet e sem conta.
 
-> **Status:** MVP concluído e funcional. Build de debug gerado com sucesso (`flutter build apk --debug`). 20 testes automatizados passando.
+> **Status:** v1.0.0-beta.1 — núcleo validado, APK gerado e execução Android verificada em emulador. 20 testes automatizados passando. Pendências não bloqueantes documentadas em `PENDENCIAS_V2.md`.
 > **Stack:** Flutter 3.47.7 + Dart 3.13.5, Android (foco) com compatibilidade iOS, banco local SQLite (sqflite).
 > **Base:** três relatórios oficiais do projeto (Produto, Desenvolvimento, Design e UX).
+> **Veredito da auditoria:** APROVADA COM RESSALVAS (veja `AUDITORIA_V1_BETA.md`).
 
 ---
 
@@ -109,17 +110,32 @@ Integração bancária, Open Finance, corretoras, recomendações de investiment
 
 ---
 
-## Testes
+## Testes e validação
 
-- `flutter analyze`: sem erros nem warnings.
-- `flutter test`: 20 testes passando (13 de domínio, 7 de interface).
-- Não foi possível instalar/executar em dispositivo Android nem rodar testes contra SQLite nativo neste ambiente (sem emulador/dispositivo físico e sem `sqlite3.dll` no Windows).
+- `flutter analyze`: 0 erros, 0 warnings (13 infos de lint de estilo).
+- `flutter test`: 20 testes passando (13 de domínio, 7 de interface com fake store).
+- `flutter build apk --debug`: APK de debug gerado com sucesso.
+- `flutter build apk --release`: APK de release gerado com sucesso (55.8 MB, assinado com chaves de debug — não para distribuição pública).
+- Execução Android: instalado e iniciado com sucesso em emulador Android API 37 (`flutter install -d emulator-5554` + `am start`).
+- Não foi possível navegar fluxos de UI manualmente no dispositivo nem rodar testes contra SQLite nativo no host (sem `sqlite3.dll`); testes de interface usam `FakeFinanceStore` em memória.
+
+## Segurança e privacidade
+
+- PIN guardado como hash SHA-256 com sal (nunca em texto claro).
+- `FLAG_SECURE` ativado (impede capturas de tela/gravação).
+- Backup automático do Android desabilitado (`allowBackup="false"`; `backup_rules.xml` exclui banco e preferências).
+- Banco SQLite **não criptografado em repouso** — risco residual documentado em `AUDITORIA_V1_BETA.md`.
+- Backup JSON não criptografado por padrão — tratar como confidencial.
 
 ---
 
-## Documentação de referência
+## Documentação de referência e auditoria
 
 - `IMPLEMENTACAO.md` — matriz consolidada de requisitos, decisões, desvios e limitações conhecidas.
+- `AUDITORIA_V1_BETA.md` — relatório de auditoria da Etapa 1 (problemas, correções, riscos, veredito).
+- `TESTES_V1_BETA.md` — ambiente, comandos, resultados e evidências dos testes.
+- `CHANGELOG.md` — histórico de mudanças da versão beta.
+- `PENDENCIAS_V2.md` — melhorias futuras, fora de escopo, riscos aceitos e itens adiados.
 - Três relatórios oficiais do projeto (Produto, Desenvolvimento, Design e UX) são a base dos requisitos implementados.
 
 ---

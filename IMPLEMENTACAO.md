@@ -22,7 +22,7 @@ O ambiente de desenvolvimento tem Flutter 3.47.7 / Dart 3.13.5 e Android SDK 36;
 | PROD-009 | R1 §7, R3 §6.5, 6.10 | Relatório mensal, estornos | MVP | totais derivados; transferência não é gasto; estorno na UI | Implementado | unitário da store + widget estorno (passou) |
 | PROD-010 | R1 §7 | Metas detalhadas, patrimônio e cartões | Posterior | validar após MVP | Fora do escopo do MVP | — |
 | DEV-001 | R2 §3 | Domínio independente de UI | Obrigatório | cálculos isolados em finance.dart | Implementado | unitário (passou) |
-| DEV-002 | R2 §2, §4 | SQLite offline, operações atômicas | Obrigatório | SQLite offline e transações | Implementado | revisão de código (sem device) |
+| DEV-002 | R2 §2, §4 | SQLite offline, operações atômicas | Obrigatório | SQLite offline e transações | Implementado | build APK Android + revisão de código (sem device de teste) |
 | DEV-003 | R2 §6 | Backup com versão, prévia, restauração atômica | MVP | checagem íntegra, restauração com conf. de saldos | Implementado | unitário do fake + revisão de código |
 | DEV-004 | R2 §5 | PIN, bloqueio e tela de bloqueio | MVP crítico | PIN bloqueia o acesso; bloqueio automático | Implementado | revisão de código (sem device) |
 | UX-001 | R3 §5–6 | Navegação e saldo Livre em destaque | MVP | Início, Lançamentos, Registrar, Caixinhas, Mais | Implementado | widget (passou) |
@@ -53,7 +53,7 @@ Notas: "unitário" = `flutter test` (domínio + fake store), "widget" = `flutter
 ## Testes e verificação
 
 - `flutter analyze`: sem erros nem warnings (apenas infos de lint de legado).
-- `flutter test`: 19 testes passando (13 de domínio, 6 de interface com fake store).
+- `flutter test`: 20 testes passando (13 de domínio, 7 de interface com fake store).
 - `flutter build apk --debug`: APK gerado com sucesso.
 - Não foi possível instalar/executar em dispositivo nem rodar testes de persistência contra SQLite nativo (Windows sem sqlite3.dll; sem emulador Android). Testes de persistência usam `FakeFinanceStore` em memória; a implementação SQLite foi revisa por código e compila no build do APK.
 

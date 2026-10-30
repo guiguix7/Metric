@@ -48,7 +48,12 @@ IconData boxIcon(String id) {
   }
 }
 
-TextStyle temaTextStyle(BuildContext context, {Color? color, double? size, FontWeight? weight}) {
+TextStyle temaTextStyle(
+  BuildContext context, {
+  Color? color,
+  double? size,
+  FontWeight? weight,
+}) {
   return TextStyle(
     color: color ?? kTextoPrincipal,
     fontSize: size,

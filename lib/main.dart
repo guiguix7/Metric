@@ -1011,9 +1011,9 @@ class _FinanceHomeState extends State<FinanceHome> {
 
   Future<void> _editarBloqueio() async {
     if (!mounted) return;
+    final ctx = context;
     final limite = await _limiteBloqueio();
     if (!mounted) return;
-    final ctx = context;
     final controller = TextEditingController(text: limite.toString());
     final ok = await showDialog<int>(
       context: ctx,

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metric/main.dart';
+
 import 'fake_store.dart';
 
 void main() {
   FinanceHome home(FakeFinanceStore store) => FinanceHome(
-        store: store,
-        mode: ThemeMode.light,
-        onTheme: (_) {},
-        desbloquear: (_) {},
-      );
+    store: store,
+    mode: ThemeMode.light,
+    onTheme: (_) {},
+    desbloquear: (_) {},
+  );
 
   Future<void> seedRenda(FakeFinanceStore store) async {
     await store.addIncome(100000, store.today, 'Salário');
@@ -38,7 +39,9 @@ void main() {
     expect(find.text('Metas'), findsOneWidget);
   });
 
-  testWidgets('registrar renda divide o valor entre as caixinhas', (tester) async {
+  testWidgets('registrar renda divide o valor entre as caixinhas', (
+    tester,
+  ) async {
     final store = FakeFinanceStore();
     await store.open();
     await tester.pumpWidget(MaterialApp(home: home(store)));
@@ -61,7 +64,9 @@ void main() {
     expect(find.text('R\$ 900,00'), findsOneWidget);
   });
 
-  testWidgets('gasto reduz a caixinha sugerida e aparece no extrato', (tester) async {
+  testWidgets('gasto reduz a caixinha sugerida e aparece no extrato', (
+    tester,
+  ) async {
     final store = FakeFinanceStore();
     await store.open();
     await seedRenda(store);
@@ -84,7 +89,9 @@ void main() {
     expect(find.textContaining('Alimentação'), findsOneWidget);
   });
 
-  testWidgets('transferência entre caixinhas não altera o total', (tester) async {
+  testWidgets('transferência entre caixinhas não altera o total', (
+    tester,
+  ) async {
     final store = FakeFinanceStore();
     await store.open();
     await seedRenda(store);
@@ -107,7 +114,9 @@ void main() {
     expect(b.values.fold<int>(0, (a, v) => a + v), 100000);
   });
 
-  testWidgets('nova distribuição vale apenas para rendas futuras', (tester) async {
+  testWidgets('nova distribuição vale apenas para rendas futuras', (
+    tester,
+  ) async {
     final store = FakeFinanceStore();
     await store.open();
     await seedRenda(store);
